@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>កម្មវិធីគ្រប់គ្រងពិន្ទុសិស្ស</title>
+<style>
+:root{font-family:system-ui,"Noto Sans Khmer",sans-serif;color:#172033;background:#f4f7fb}
+*{box-sizing:border-box}body{margin:0}header{background:#173b72;color:white;padding:20px 16px}
+header h1{font-size:clamp(20px,4vw,30px);margin:0 0 6px}header p{margin:0;color:#dce8ff}
+main{max-width:1150px;margin:20px auto;padding:0 14px 40px}.panel{background:white;border:1px solid #e1e7f0;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 4px 16px #12264a0b}
+h2{font-size:20px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label{display:block;font-size:14px;font-weight:650;margin-bottom:5px}input,select,button{font:inherit}input,select{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:9px;background:white;min-height:42px}
+button{border:0;border-radius:9px;padding:10px 14px;background:#1f5fbf;color:white;cursor:pointer;font-weight:650;min-height:42px}button.secondary{background:#e8eef8;color:#19365f}button.danger{background:#b42318}button:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{color:#64748b;font-size:13px}.status{padding:10px 12px;border-radius:9px;background:#eef4ff;margin-bottom:14px;white-space:pre-wrap}.status.error{background:#fff0ef;color:#8c1d18}.status.ok{background:#eaf8ef;color:#176534}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button{background:#e4eaf4;color:#203653}.tabs button.active{background:#173b72;color:white}
+table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:10px;border-bottom:1px solid #e5eaf2;text-align:left;vertical-align:middle}th{background:#f7f9fc} .tablewrap{overflow:auto;border:1px solid #e5eaf2;border-radius:10px}
+.hidden{display:none!important}.smallbtn{padding:6px 9px;min-height:34px;font-size:13px;margin:2px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}.stat{background:#f5f8fe;padding:14px;border-radius:10px}.stat b{font-size:24px;display:block}
+footer{text-align:center;color:#64748b;font-size:12px;padding:10px}
+@media(max-width:600px){main{margin-top:12px}.panel{padding:13px}header{padding:17px 14px}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<header><h1>កម្មវិធីគ្រប់គ្រងពិន្ទុសិស្ស</h1><p>សម្រាប់អនុវិទ្យាល័យ · រក្សាទុកទិន្នន័យតាមអ៊ីនធឺណិត</p></header>
+<main>
+<div id="status" class="status">សូមកំណត់ Firebase នៅក្នុងកូដ មុនពេលប្រើកម្មវិធី។</div>
+
+<section id="setupNotice" class="panel">
+<h2>ការតភ្ជាប់ Firebase</h2>
+<p>កម្មវិធីនេះប្រើ Firebase Authentication និង Cloud Firestore។ បំពេញព័ត៌មានគម្រោង Firebase នៅក្នុងផ្នែក <code>firebaseConfig</code> ខាងក្រោមកូដនេះ រួចបង្ហោះទៅ hosting។</p>
+<p class="muted">កុំបិទសុវត្ថិភាព Database ជាសាធារណៈ។ សូមប្រើ Firestore Rules ដែលមានក្នុងឯកសារ ZIP។</p>
+</section>
+
+<section id="authPanel" class="panel">
+<h2>ចូលប្រើគណនីគ្រូ</h2>
+<div class="grid">
+<div><label for="email">អ៊ីមែល</label><input id="email" type="email" autocomplete="username" placeholder="teacher@example.com"></div>
+<div><label for="password">ពាក្យសម្ងាត់</label><input id="password" type="password" autocomplete="current-password" placeholder="យ៉ាងតិច ៦ តួអក្សរ"></div>
+</div>
+<div class="actions"><button id="loginBtn">ចូលប្រើ</button><button id="signupBtn" class="secondary">បង្កើតគណនី</button></div>
+<p class="muted">បង្កើតគណនីតែម្ដង ហើយប្រើគណនីនោះចូលប្រើពីកុំព្យូទ័រ ឬទូរស័ព្ទ។</p>
+</section>
+
+<section id="appPanel" class="hidden">
+<div class="panel">
+<div class="stats">
+<div class="stat"><span class="muted">ចំនួនសិស្ស</span><b id="studentCount">0</b></div>
+<div class="stat"><span class="muted">ចំនួនកំណត់ត្រាពិន្ទុ</span><b id="gradeCount">0</b></div>
+<div class="stat"><span class="muted">គណនីកំពុងប្រើ</span><b id="userLabel" style="font-size:14px;overflow-wrap:anywhere">—</b></div>
+</div>
+<div class="tabs">
+<button class="active" data-tab="students">ព័ត៌មានសិស្ស</button>
+<button data-tab="grades">បញ្ចូលពិន្ទុ</button>
+<button data-tab="reports">របាយការណ៍</button>
+<button data-tab="rankings">កិត្តិយស និងចំណាត់ថ្នាក់</button>
+</div>
+<div id="studentsTab">
+<h2>បន្ថែម / កែព័ត៌មានសិស្ស</h2>
+<input id="studentId" type="hidden">
+<div class="grid">
+<div><label for="sid">លេខសម្គាល់សិស្ស *</label><input id="sid" placeholder="ឧ. S001"></div>
+<div><label for="sname">ឈ្មោះសិស្ស *</label><input id="sname" placeholder="ឈ្មោះពេញ"></div>
+<div><label for="gender">ភេទ</label><select id="gender"><option>មិនបានបញ្ជាក់</option><option>ប្រុស</option><option>ស្រី</option></select></div>
+<div><label for="className">ថ្នាក់ *</label><select id="className"><option>ថ្នាក់ទី៧</option><option>ថ្នាក់ទី៨</option><option>ថ្នាក់ទី៩</option></select></div>
+</div>
+<div class="actions"><button id="saveStudent">រក្សាទុកសិស្ស</button><button id="clearStudent" class="secondary">សម្អាតប្រអប់</button></div>
+<h2 style="margin-top:24px">បញ្ជីសិស្ស</h2>
+<div class="grid" style="margin-bottom:12px"><div><label for="studentSearch">ស្វែងរកសិស្ស</label><input id="studentSearch" placeholder="ឈ្មោះ ឬលេខសម្គាល់"></div><div><label for="classFilter">ត្រងតាមថ្នាក់</label><select id="classFilter"><option value="">គ្រប់ថ្នាក់</option><option>ថ្នាក់ទី៧</option><option>ថ្នាក់ទី៨</option><option>ថ្នាក់ទី៩</option></select></div></div>
+<div class="tablewrap"><table><thead><tr><th>លេខសម្គាល់</th><th>ឈ្មោះ</th><th>ភេទ</th><th>ថ្នាក់</th><th>សកម្មភាព</th></tr></thead><tbody id="studentsBody"></tbody></table></div>
+</div>
+<div id="gradesTab" class="hidden">
+<h2>បញ្ចូលពិន្ទុ</h2>
+<div class="grid">
+<div><label for="gradeStudent">សិស្ស *</label><select id="gradeStudent"></select></div>
+<div><label for="subject">មុខវិជ្ជា *</label><select id="subject"><option>គណិតវិទ្យា</option><option>ភាសាខ្មែរ</option><option>ភាសាអង់គ្លេស</option><option>រូបវិទ្យា</option><option>គីមីវិទ្យា</option><option>ជីវវិទ្យា</option><option>ប្រវត្តិវិទ្យា</option><option>ភូមិវិទ្យា</option><option>សីលធម៌-ពលរដ្ឋ</option><option>អប់រំកាយ</option><option>ផ្សេងៗ</option></select></div>
+<div><label for="exam">ប្រភេទប្រឡង</label><select id="exam"><option>ប្រចាំខែ</option><option>ឆមាសទី១</option><option>ឆមាសទី២</option><option>ប្រចាំឆ្នាំ</option></select></div>
+<div><label for="score">ពិន្ទុ (០–១០០) *</label><input id="score" type="number" min="0" max="100" step="0.01" placeholder="ឧ. 85"></div>
+<div><label for="term">ឆ្នាំសិក្សា</label><input id="term" placeholder="ឧ. ២០២៦-២០២៧"></div>
+</div>
+<div class="actions"><button id="saveGrade">រក្សាទុកពិន្ទុ</button><button id="printGrades" class="secondary">បោះពុម្ពបញ្ជីពិន្ទុ</button></div>
+<p class="muted">មធ្យមភាគក្នុងរបាយការណ៍ គឺជាមធ្យមនៃកំណត់ត្រាពិន្ទុដែលបានរក្សាទុកសម្រាប់សិស្សនោះ។</p>
+<h2 style="margin-top:24px">កំណត់ត្រាពិន្ទុ</h2>
+<div class="tablewrap"><table><thead><tr><th>សិស្ស</th><th>ថ្នាក់</th><th>មុខវិជ្ជា</th><th>ប្រភេទ</th><th>ឆ្នាំសិក្សា</th><th>ពិន្ទុ</th><th>សកម្មភាព</th></tr></thead><tbody id="gradesBody"></tbody></table></div>
+</div>
+<div id="reportsTab" class="hidden">
+<h2>របាយការណ៍លទ្ធផល</h2>
+<div class="grid" style="margin-bottom:12px"><div><label for="reportClass">ថ្នាក់</label><select id="reportClass"><option value="">គ្រប់ថ្នាក់</option><option>ថ្នាក់ទី៧</option><option>ថ្នាក់ទី៨</option><option>ថ្នាក់ទី៩</option></select></div><div><label for="reportSubject">មុខវិជ្ជា</label><select id="reportSubject"><option value="">គ្រប់មុខវិជ្ជា</option><option>គណិតវិទ្យា</option><option>ភាសាខ្មែរ</option><option>ភាសាអង់គ្លេស</option><option>រូបវិទ្យា</option><option>គីមីវិទ្យា</option><option>ជីវវិទ្យា</option><option>ប្រវត្តិវិទ្យា</option><option>ភូមិវិទ្យា</option><option>សីលធម៌-ពលរដ្ឋ</option><option>អប់រំកាយ</option><option>ផ្សេងៗ</option></select></div></div>
+<div class="actions"><button id="refreshReport">បង្កើតរបាយការណ៍</button><button id="printReport" class="secondary">បោះពុម្ពរបាយការណ៍</button></div>
+<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>លេខសម្គាល់</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់</th><th>ចំនួនពិន្ទុ</th><th>មធ្យមភាគ</th><th>និទ្ទេស</th><th>លទ្ធផល</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+<p class="muted">និទ្ទេសគំរូ៖ A = 85–100, B = 70–84.99, C = 55–69.99, D = 40–54.99, E = ក្រោម 40។ សូមកែតម្រូវតាមបទបញ្ជារបស់សាលា។</p>
+</div>
+<div id="rankingsTab" class="hidden">
+<h2>តារាងកិត្តិយស និងចំណាត់ថ្នាក់ប្រចាំឆ្នាំសិក្សា</h2>
+<div class="grid" style="margin-bottom:12px">
+<div><label for="rankClass">ជ្រើសថ្នាក់</label><select id="rankClass"><option>ថ្នាក់ទី៧</option><option>ថ្នាក់ទី៨</option><option>ថ្នាក់ទី៩</option></select></div>
+<div><label for="rankYear">ឆ្នាំសិក្សា</label><select id="rankYear"><option value="">ជ្រើសឆ្នាំសិក្សា</option></select></div>
+</div>
+<div class="actions"><button id="refreshRanking">គណនាចំណាត់ថ្នាក់</button><button id="printRanking" class="secondary">បោះពុម្ពតារាង</button></div>
+<p class="muted">គណនាមធ្យមភាគពីកំណត់ត្រាពិន្ទុទាំងអស់ក្នុងឆ្នាំសិក្សាដែលបានជ្រើស។ សិស្សដែលមានមធ្យមភាគចាប់ពី 90 ឡើងទៅ នឹងមានសញ្ញា “កិត្តិយស”។ ប្រសិនបើសាលាមានវិធីគណនាផ្សេង សូមកែតាមបទបញ្ជាសាលា។</p>
+<h2 style="margin-top:20px">តារាងចំណាត់ថ្នាក់ក្នុងថ្នាក់</h2>
+<div class="tablewrap"><table><thead><tr><th>ចំណាត់ថ្នាក់</th><th>លេខសម្គាល់</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់</th><th>ចំនួនពិន្ទុ</th><th>មធ្យមភាគ</th></tr></thead><tbody id="rankingBody"></tbody></table></div>
+<h2 style="margin-top:20px">តារាងកិត្តិយស (មធ្យមភាគ ≥ 90)</h2>
+<div class="tablewrap"><table><thead><tr><th>លេខសម្គាល់</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់</th><th>មធ្យមភាគ</th><th>ស្ថានភាព</th></tr></thead><tbody id="honorBody"></tbody></table></div>
+</div>
+<div class="actions"><button id="logoutBtn" class="danger">ចាកចេញ</button></div>
+</div>
+</section>
+<footer>កុំបញ្ចូលព័ត៌មានរសើបដែលមិនចាំបាច់។ សូមរក្សាពាក្យសម្ងាត់ជាសម្ងាត់ និងបម្រុងទុកទិន្នន័យជាប្រចាំ។</footer>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ១) បំពេញព័ត៌មាន Firebase របស់អ្នកនៅទីនេះ (Firebase Console > Project settings > Your apps)
+const firebaseConfig = {
+  apiKey: "AIzaSyDCQ2u0WqiExjmg0S_baHEDyVYH4m9fE9c",
+  authDomain: "visal19-95.firebaseapp.com",
+  projectId: "visal19-95",
+  storageBucket: "visal19-95.firebasestorage.app",
+  messagingSenderId: "363247178834",
+  appId: "1:363247178834:web:ade5f850cc40130a46fb8b",
+  measurementId: "G-3WLRMT43BK"
+};
+
+const $ = id => document.getElementById(id);
+const statusEl = $("status");
+let auth, db, currentUser = null, students = [], grades = [];
+function message(text, type="") { statusEl.textContent = text; statusEl.className = "status " + type; }
+function readyConfig(){ return firebaseConfig.apiKey !== "PASTE_API_KEY_HERE" && firebaseConfig.projectId !== "PASTE_PROJECT_ID_HERE"; }
+if (!readyConfig()) {
+  message("មិនទាន់ភ្ជាប់ Firebase ទេ។ សូមបំពេញ firebaseConfig ក្នុង index.html ហើយបង្ហោះកម្មវិធី មុនចូលប្រើ។", "error");
+  $("loginBtn").disabled = $("signupBtn").disabled = true;
+} else {
+  const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+  $("loginBtn").addEventListener("click", async () => {
+    try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value); message("ចូលប្រើបានជោគជ័យ។", "ok"); }
+    catch(e){ message("ចូលប្រើមិនបាន៖ " + friendlyError(e), "error"); }
+  });
+  $("signupBtn").addEventListener("click", async () => {
+    try {
+      if ($("password").value.length < 6) throw new Error("សូមប្រើពាក្យសម្ងាត់យ៉ាងតិច ៦ តួអក្សរ។");
+      await createUserWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+      message("បង្កើតគណនីបានជោគជ័យ។ សូមរក្សាពាក្យសម្ងាត់ឱ្យមានសុវត្ថិភាព។", "ok");
+    } catch(e){ message("បង្កើតគណនីមិនបាន៖ " + friendlyError(e), "error"); }
+  });
+  onAuthStateChanged(auth, async user => {
+    currentUser = user;
+    $("authPanel").classList.toggle("hidden", !!user);
+    $("appPanel").classList.toggle("hidden", !user);
+    $("setupNotice").classList.add("hidden");
+    if(user){ $("userLabel").textContent = user.email || "គណនីគ្រូ"; await loadAll(); }
+  });
+}
+function friendlyError(e) {
+  const code = e?.code || "";
+  const map = {"auth/invalid-email":"អ៊ីមែលមិនត្រឹមត្រូវ","auth/invalid-credential":"អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ","auth/email-already-in-use":"អ៊ីមែលនេះមានគណនីរួចហើយ","auth/weak-password":"ពាក្យសម្ងាត់ខ្សោយពេក","auth/operation-not-allowed":"សូមបើក Email/Password ក្នុង Firebase Authentication","permission-denied":"សិទ្ធិ Database មិនអនុញ្ញាត សូមពិនិត្យ Firestore Rules","unavailable":"មិនអាចភ្ជាប់អ៊ីនធឺណិត ឬ Firebase បាន"};
+  return map[code] || e.message || "មានបញ្ហាមិនស្គាល់";
+}
+async function loadAll(){
+  try{
+    const [ss,gs] = await Promise.all([
+      getDocs(query(collection(db,"users",currentUser.uid,"students"),orderBy("name"))),
+      getDocs(query(collection(db,"users",currentUser.uid,"grades"),orderBy("createdAt","desc")))
+    ]);
+    students = ss.docs.map(d=>({id:d.id,...d.data()}));
+    grades = gs.docs.map(d=>({id:d.id,...d.data()}));
+    renderStudents(); renderGrades(); renderStudentOptions(); renderReport(); populateRankYears(); renderRankings();
+    $("studentCount").textContent = students.length; $("gradeCount").textContent = grades.length;
+    message("ទិន្នន័យបានធ្វើបច្ចុប្បន្នភាព។", "ok");
+  }catch(e){ message("មិនអាចអានទិន្នន័យបាន៖ "+friendlyError(e), "error"); }
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function clearStudent(){["studentId","sid","sname"].forEach(id=>$(id).value="");$("gender").value="មិនបានបញ្ជាក់";$("className").value="ថ្នាក់ទី៧";}
+$("clearStudent").onclick=clearStudent;
+$("saveStudent").onclick=async()=>{
+ const id=$("studentId").value, sid=$("sid").value.trim(), name=$("sname").value.trim();
+ if(!sid||!name){message("សូមបញ្ចូលលេខសម្គាល់ និងឈ្មោះសិស្ស។","error");return;}
+ if(students.some(s=>s.sid.toLowerCase()===sid.toLowerCase()&&s.id!==id)){message("លេខសម្គាល់នេះមានរួចហើយ។","error");return;}
+ const data={sid,name,gender:$("gender").value,className:$("className").value,updatedAt:serverTimestamp()};
+ try{
+  if(id) await updateDoc(doc(db,"users",currentUser.uid,"students",id),data);
+  else await addDoc(collection(db,"users",currentUser.uid,"students"),{...data,createdAt:serverTimestamp()});
+  clearStudent(); await loadAll(); message("រក្សាទុកព័ត៌មានសិស្សបានជោគជ័យ។","ok");
+ }catch(e){message("រក្សាទុកមិនបាន៖ "+friendlyError(e),"error");}
+};
+function renderStudents(){
+ const search=$("studentSearch").value.toLowerCase(), cl=$("classFilter").value;
+ const list=students.filter(s=>(!cl||s.className===cl)&&(`${s.sid} ${s.name}`.toLowerCase().includes(search)));
+ $("studentsBody").innerHTML=list.map(s=>`<tr><td>${esc(s.sid)}</td><td>${esc(s.name)}</td><td>${esc(s.gender)}</td><td>${esc(s.className)}</td><td><button class="smallbtn secondary" data-edit="${s.id}">កែ</button><button class="smallbtn danger" data-delete-student="${s.id}">លុប</button></td></tr>`).join("")||'<tr><td colspan="5">មិនទាន់មានសិស្ស ឬរកមិនឃើញ។</td></tr>';
+ document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const s=students.find(x=>x.id===b.dataset.edit);$("studentId").value=s.id;$("sid").value=s.sid;$("sname").value=s.name;$("gender").value=s.gender;$("className").value=s.className;window.scrollTo({top:0,behavior:"smooth"});});
+ document.querySelectorAll("[data-delete-student]").forEach(b=>b.onclick=async()=>{const s=students.find(x=>x.id===b.dataset.deleteStudent);if(!confirm(`លុបសិស្ស ${s.name}? ពិន្ទុដែលបានបញ្ចូលមិនត្រូវបានលុបដោយស្វ័យប្រវត្តិទេ។`))return;try{await deleteDoc(doc(db,"users",currentUser.uid,"students",s.id));await loadAll();}catch(e){message("លុបមិនបាន៖ "+friendlyError(e),"error");}});
+}
+$("studentSearch").oninput=renderStudents;$("classFilter").onchange=renderStudents;
+function renderStudentOptions(){
+ $("gradeStudent").innerHTML=students.map(s=>`<option value="${s.id}">${esc(s.sid)} — ${esc(s.name)} (${esc(s.className)})</option>`).join("");
+}
+$("saveGrade").onclick=async()=>{
+ const student=students.find(s=>s.id===$("gradeStudent").value), score=Number($("score").value);
+ if(!student){message("សូមបន្ថែមសិស្សជាមុន។","error");return;}
+ if($("score").value===""||!Number.isFinite(score)||score<0||score>100){message("ពិន្ទុត្រូវមានចន្លោះពី ០ ដល់ ១០០។","error");return;}
+ const data={studentId:student.id,sid:student.sid,studentName:student.name,className:student.className,subject:$("subject").value,exam:$("exam").value,term:$("term").value.trim(),score,createdAt:serverTimestamp()};
+ try{await addDoc(collection(db,"users",currentUser.uid,"grades"),data);$("score").value="";await loadAll();message("រក្សាទុកពិន្ទុបានជោគជ័យ។","ok");}
+ catch(e){message("រក្សាទុកពិន្ទុមិនបាន៖ "+friendlyError(e),"error");}
+};
+function renderGrades(){
+ $("gradesBody").innerHTML=grades.map(g=>`<tr><td>${esc(g.studentName)}</td><td>${esc(g.className)}</td><td>${esc(g.subject)}</td><td>${esc(g.exam)}</td><td>${esc(g.term||"—")}</td><td>${Number(g.score).toFixed(2)}</td><td><button class="smallbtn danger" data-delete-grade="${g.id}">លុប</button></td></tr>`).join("")||'<tr><td colspan="7">មិនទាន់មានពិន្ទុ។</td></tr>';
+ document.querySelectorAll("[data-delete-grade]").forEach(b=>b.onclick=async()=>{if(!confirm("តើចង់លុបកំណត់ត្រាពិន្ទុនេះមែនទេ?"))return;try{await deleteDoc(doc(db,"users",currentUser.uid,"grades",b.dataset.deleteGrade));await loadAll();}catch(e){message("លុបមិនបាន៖ "+friendlyError(e),"error");}});
+}
+function populateRankYears(){
+ const sel=$("rankYear"), old=sel.value;
+ const years=[...new Set(grades.map(g=>(g.term||"").trim()).filter(Boolean))].sort((a,b)=>b.localeCompare(a,"en",{numeric:true}));
+ sel.innerHTML='<option value="">ជ្រើសឆ្នាំសិក្សា</option>'+years.map(y=>`<option value="${esc(y)}">${esc(y)}</option>`).join("");
+ if(years.includes(old))sel.value=old; else if(years.length)sel.value=years[0];
+}
+function renderRankings(){
+ const cl=$("rankClass").value, year=$("rankYear").value;
+ if(!year){$("rankingBody").innerHTML='<tr><td colspan="6">សូមបញ្ចូលពិន្ទុដែលមានឆ្នាំសិក្សា រួចជ្រើសឆ្នាំសិក្សា។</td></tr>';$("honorBody").innerHTML='<tr><td colspan="5">មិនទាន់មានទិន្នន័យឆ្នាំសិក្សា។</td></tr>';return;}
+ const classStudents=students.filter(s=>s.className===cl);
+ const rows=classStudents.map(s=>{const own=grades.filter(g=>g.studentId===s.id&&(g.term||"").trim()===year);const avg=own.length?own.reduce((sum,g)=>sum+Number(g.score||0),0)/own.length:null;return {...s,count:own.length,avg};}).filter(s=>s.avg!==null).sort((a,b)=>b.avg-a.avg||a.name.localeCompare(b.name));
+ let rank=0,last=null;
+ const ranked=rows.map((s,i)=>{if(last===null||s.avg<last)rank=i+1;last=s.avg;return {...s,rank};});
+ $("rankingBody").innerHTML=ranked.map(s=>`<tr><td>${s.rank}</td><td>${esc(s.sid)}</td><td>${esc(s.name)}</td><td>${esc(s.className)}</td><td>${s.count}</td><td>${s.avg.toFixed(2)}</td></tr>`).join("")||'<tr><td colspan="6">មិនមានពិន្ទុសម្រាប់ថ្នាក់ និងឆ្នាំសិក្សានេះទេ។</td></tr>';
+ const honors=ranked.filter(s=>s.avg>=90);
+ $("honorBody").innerHTML=honors.map(s=>`<tr><td>${esc(s.sid)}</td><td>${esc(s.name)}</td><td>${esc(s.className)}</td><td>${s.avg.toFixed(2)}</td><td>កិត្តិយស</td></tr>`).join("")||'<tr><td colspan="5">មិនទាន់មានសិស្សដែលមធ្យមភាគដល់ 90 ពិន្ទុទេ។</td></tr>';
+}
+$("refreshRanking").onclick=renderRankings;$("rankClass").onchange=renderRankings;$("rankYear").onchange=renderRankings;$("printRanking").onclick=()=>{document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab==="rankings"));["students","grades","reports","rankings"].forEach(t=>$(t+"Tab").classList.toggle("hidden",t!=="rankings"));window.print();};
+function gradeLetter(avg){return avg>=85?"A":avg>=70?"B":avg>=55?"C":avg>=40?"D":"E";}
+function renderReport(){
+ const cl=$("reportClass").value, sub=$("reportSubject").value;
+ const filtered=grades.filter(g=>(!cl||g.className===cl)&&(!sub||g.subject===sub));
+ const rows=students.filter(s=>!cl||s.className===cl).map(s=>{
+  const own=filtered.filter(g=>g.studentId===s.id), avg=own.length?own.reduce((a,g)=>a+Number(g.score),0)/own.length:null;
+  return {...s,count:own.length,avg};
+ }).sort((a,b)=>(b.avg??-1)-(a.avg??-1));
+ $("reportBody").innerHTML=rows.map(s=>`<tr><td>${esc(s.sid)}</td><td>${esc(s.name)}</td><td>${esc(s.className)}</td><td>${s.count}</td><td>${s.avg===null?"—":s.avg.toFixed(2)}</td><td>${s.avg===null?"—":gradeLetter(s.avg)}</td><td>${s.avg===null?"គ្មានពិន្ទុ":s.avg>=40?"ជាប់ (តាមកម្រិតគំរូ)":"ត្រូវពិនិត្យ"}</td></tr>`).join("")||'<tr><td colspan="7">គ្មានទិន្នន័យ។</td></tr>';
+}
+$("refreshReport").onclick=renderReport;$("reportClass").onchange=renderReport;$("reportSubject").onchange=renderReport;
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.onclick=()=>{
+ document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b===btn));
+ ["students","grades","reports","rankings"].forEach(t=>$(t+"Tab").classList.toggle("hidden",t!==btn.dataset.tab));
+ if(btn.dataset.tab==="reports")renderReport();
+ if(btn.dataset.tab==="rankings"){populateRankYears();renderRankings();}
+});
+$("logoutBtn").onclick=()=>signOut(auth);
+$("printGrades").onclick=$("printReport").onclick=()=>window.print();
+const printStyle=document.createElement("style");printStyle.textContent="@media print{header p,#authPanel,#setupNotice,.tabs,.actions,button,input,select,footer,.muted{display:none!important}body{background:white}.panel{box-shadow:none;border:0}main{max-width:none;margin:0}.hidden{display:none!important}.tablewrap{overflow:visible}table{min-width:0;font-size:11px}th,td{padding:5px}}";document.head.appendChild(printStyle);
+</script>
+</body>
+</html>
